@@ -8,8 +8,305 @@ Created on Fri Mar  8 09:44:11 2024
 """Costos por MW"""
 
 from Ejemplos import *
+import numpy_financial as npf
 import math 
+from openpyxl import Workbook
+from openpyxl import load_workbook
+from openpyxl.styles import Alignment
+from openpyxl.styles import Font
+from openpyxl.styles import NamedStyle
 
+
+"""Una posible solución al problema es envíar los datos de entrada dentro de una función creada en este archivo"""
+
+
+
+def calcular_van(flujos_de_efectivo, tasa_descuento):
+    van = 0
+    lista=[]
+    for i in range(0,len(flujos_de_efectivo)):
+        if i==0:
+            #van=flujos_de_efectivo[0]
+            print('holi')
+        else:
+            van+=flujos_de_efectivo[i]/((1+tasa_descuento)**(i))
+            lista.append(flujos_de_efectivo[i]/((1+tasa_descuento)**(i)))
+            #print(lista[i-1])
+    return van
+
+
+def reporteExcel():
+    book=Workbook()
+    sheet = book.active
+    sheet.title='Resumen Proyecto'
+    sheet['A1'] = "Costo nivelado de energía" 
+    sheet['A1'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet['A1'].font=Font(italic=True, bold=True)
+    sheet.column_dimensions['A'].width=44
+    sheet.column_dimensions['B'].width=12
+    sheet.column_dimensions['C'].width=17
+    sheet['B1'] = "$/kWh"
+    sheet['B1'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet['B1'].font=Font(italic=True, bold=True)
+    sheet['C1'] = LCOE
+    sheet['C1'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet['A2'] = "Tipo de tecnología"
+    sheet['A2'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet['A2'].font=Font(italic=True, bold=True)
+    sheet['B2'] = "Fotovoltaica"
+    sheet['B2'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet['B2'].font=Font(italic=True, bold=True)
+    sheet["A3"] = "Capacidad del generador"
+    sheet['A3'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet['A3'].font=Font(italic=True, bold=True)
+    sheet["B3"] = "kWp"
+    sheet['B3'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet['B3'].font=Font(italic=True, bold=True)
+    sheet["C3"] = C_InstaladaDC
+    sheet['C3'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet["A4"] = "Producción de energía"
+    sheet['A4'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet['A4'].font=Font(italic=True, bold=True)
+    sheet["B4"] = "kWh-año"
+    sheet['B4'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet['B4'].font=Font(italic=True, bold=True)
+    sheet["C4"] = energiaPrimerAno
+    sheet['C4'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet["A5"] = "Vida útil proyecto"
+    sheet['A5'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet['A5'].font=Font(italic=True, bold=True)
+    sheet["B5"] = "años"
+    sheet['B5'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet['B5'].font=Font(italic=True, bold=True)
+    sheet["C5"] = 25
+    sheet['C5'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet["A6"] = "Costo total instalación"
+    sheet['A6'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet['A6'].font=Font(italic=True, bold=True)
+    sheet["B6"] = "$/watt"
+    sheet['B6'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet['B6'].font=Font(italic=True, bold=True)
+    sheet['C6'].style=NamedStyle(name='contable', number_format='_-* #,##0.00_-;-* #,##0.00_-;_-* "-"??_-;_-@_-')
+    sheet["C6"] = CostoTotalInstalado
+    sheet['C6'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet["A7"] = "Gastos operativos"
+    sheet['A7'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet['A7'].font=Font(italic=True, bold=True)
+    sheet["B7"] ="$"
+    sheet['B7'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet['B7'].font=Font(italic=True, bold=True)
+    sheet['C7'].number_format='#,##0.00'
+    sheet["C7"] = totalEgresos[0]
+    sheet['C7'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet["A8"] = "Valor unitario de costos operacionales"
+    sheet['A8'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet['A8'].font=Font(italic=True, bold=True)
+    sheet["B8"] = "$/kWh"
+    sheet['B8'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet['B8'].font=Font(italic=True, bold=True)
+    sheet['C8'].number_format='#,##0.00'
+    sheet["C8"] = valorUnitario
+    sheet['C8'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet["A9"] = "Total Ingresos"
+    sheet['A9'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet['A9'].font=Font(italic=True, bold=True)
+    sheet["B9"] = "$"
+    sheet['B9'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet['B9'].font=Font(italic=True, bold=True)
+    sheet['C9'].number_format='#,##0.00'
+    sheet["C9"] = totalIngresos[0]
+    sheet['C9'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet["A10"] = "Porcentaje de costos duros"
+    sheet['A10'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet['A10'].font=Font(italic=True, bold=True)
+    sheet["B10"] = "%"
+    sheet['B10'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet['B10'].font=Font(italic=True, bold=True)
+    sheet["C10"] = 100-valorPorcenCostosDuros.get()
+    sheet['C10'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet["A11"] = "Inversión de capital"
+    sheet['A11'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet['A11'].font=Font(italic=True, bold=True)
+    sheet["B11"] = "$"
+    sheet['B11'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet['B11'].font=Font(italic=True, bold=True)
+    sheet['C11'].number_format='#,##0.00'
+    sheet["C11"] = Inversion
+    sheet['C11'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet['A12'] = "Tir después de impuestos"
+    sheet['A12'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet['A12'].font=Font(italic=True, bold=True)
+    sheet['B12'] = "%"
+    sheet['B12'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet['B12'].font=Font(italic=True, bold=True)
+    sheet['C12'] = valorEquityTIR.get()
+    sheet['C12'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet['A13'] = "% de los costos duros financiados mediante deuda"
+    sheet['A13'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet['A13'].font=Font(italic=True, bold=True)
+    sheet['B13'] = "%"
+    sheet['B13'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet['B13'].font=Font(italic=True, bold=True)
+    sheet['C13'] = valorPorcenCostosDuros.get()
+    sheet['C13'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet['A14'] = "Plazo de la deuda"
+    sheet['A14'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet['A14'].font=Font(italic=True, bold=True)
+    sheet['B14'] = "Años"
+    sheet['B14'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet['B14'].font=Font(italic=True, bold=True)
+    sheet['C14'] = plazoDeuda
+    sheet['C14'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet['A15'] ="Es el propietario sujeto a impuestos"
+    sheet['A15'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet['A15'].font=Font(italic=True, bold=True)
+    sheet['C15'].alignment=Alignment(horizontal='center', vertical='center')
+    if impuestos.get()==0:
+        sheet['C15']= "Sí"
+    else:
+        sheet['C15']='No'
+    sheet['A16'] = "TIR antes de impuestos"
+    sheet['A16'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet['A16'].font=Font(italic=True, bold=True)
+    sheet['B16'] = "%"
+    sheet['B16'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet['B16'].font=Font(italic=True, bold=True)
+    sheet['C16'] = TIR*100
+    sheet['C16'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet['A17'] = "TIR después de impuestos"
+    sheet['A17'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet['A17'].font=Font(italic=True, bold=True)
+    sheet['B17'] = "%"
+    sheet['B17'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet['B17'].font=Font(italic=True, bold=True)
+    sheet['C17'] = TIR_dos*100
+    sheet['C17'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet['A18'] ="Valor presente neto de los costos"
+    sheet['A18'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet['A18'].font=Font(italic=True, bold=True)
+    sheet['B18'] = "$"
+    sheet['B18'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet['B18'].font=Font(italic=True, bold=True)
+    sheet['C18'].number_format='#,##0.00'
+    sheet['C18'] = VAN_dosAux
+    sheet['C18'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet['A19'] = "Valor presente neto del capital final"
+    sheet['A19'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet['A19'].font=Font(italic=True, bold=True)
+    sheet['B19'] = "$"
+    sheet['B19'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet['B19'].font=Font(italic=True, bold=True)
+    sheet['C19'].number_format='#,##0.00'
+    sheet['C19'] = VAN
+    sheet['C19'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet['A20'] = "Se cumple el DCSR mínimo requerido"
+    sheet['A20'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet['A20'].font=Font(italic=True, bold=True)
+    sheet['C20'].alignment=Alignment(horizontal='center', vertical='center')
+    if DSCR[0]>DCSRrequerido:
+        sheet['C20']="Sí"
+    else:
+        sheet['C20']='No'
+    sheet['A21']="Se cumple el DCSR promedio requerido"
+    sheet['A21'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet['A21'].font=Font(italic=True, bold=True)
+    sheet['C21'].alignment=Alignment(horizontal='center', vertical='center')
+    if (sum(DSCR[0:15])/len(DSCR))>valorDCSRpromedio.get():
+        sheet['C21']='Sí'
+    else:
+        sheet['C21']='No'
+    
+    segundaHoja=book.create_sheet(title="Flujo de caja anual")
+    segundaHoja.column_dimensions['A'].width=17
+    segundaHoja['A1']="Año del proyecto"
+    segundaHoja['A1'].font=Font(italic=True,bold=True)
+    segundaHoja['A1'].alignment=Alignment(horizontal='center', vertical='center')
+    for i in range(2,28):
+        segundaHoja['A'+str(i)]=i-2
+        segundaHoja['A'+str(i)].alignment=Alignment(horizontal='center',vertical='center')
+    
+    segundaHoja.column_dimensions['B'].width=33
+    segundaHoja['B1']="Tarifa Energía Vendida PPA COP/kWh"
+    segundaHoja['B1'].font=Font(italic=True,bold=True)
+    segundaHoja['B1'].alignment=Alignment(horizontal='center', vertical='center')
+    
+    segundaHoja.column_dimensions['C'].width=20
+    segundaHoja['C1']="Ingresos por ventas $"
+    segundaHoja['C1'].font=Font(italic=True,bold=True)
+    segundaHoja['C1'].alignment=Alignment(horizontal='center', vertical='center')
+    
+    segundaHoja.column_dimensions['D'].width=20
+    segundaHoja['D1']="Costos operativos $"
+    segundaHoja['D1'].font=Font(italic=True,bold=True)
+    segundaHoja['D1'].alignment=Alignment(horizontal='center', vertical='center')
+    
+    segundaHoja.column_dimensions['E'].width=33
+    segundaHoja['E1']="Flujo de caja después de impuestos $"
+    segundaHoja['E1'].font=Font(italic=True,bold=True)
+    segundaHoja['E1'].alignment=Alignment(horizontal='center', vertical='center')
+    
+    segundaHoja.column_dimensions['F'].width=25
+    segundaHoja['F1']="Flujo de caja acumulado $"
+    segundaHoja['F1'].font=Font(italic=True,bold=True)
+    segundaHoja['F1'].alignment=Alignment(horizontal='center', vertical='center')
+    segundaHoja['F2'].alignment=Alignment(horizontal='center', vertical='center')
+    segundaHoja['F2']=-Inversion
+    segundaHoja['F2'].number_format='#,##0.00'
+    AuxFilaF=-Inversion
+    
+    segundaHoja.column_dimensions['G'].width=25
+    segundaHoja['G1']="Flujo de caja del interés $"
+    segundaHoja['G1'].font=Font(italic=True,bold=True)
+    segundaHoja['G1'].alignment=Alignment(horizontal='center', vertical='center')
+    segundaHoja['G2'].alignment=Alignment(horizontal='center', vertical='center')
+    AuxFilaG=0
+    
+    segundaHoja.column_dimensions['H'].width=25
+    segundaHoja['H1']="Cobertura de servicio de la deuda"
+    segundaHoja['H1'].font=Font(italic=True,bold=True)
+    segundaHoja['H1'].alignment=Alignment(horizontal='center', vertical='center')
+    
+    for j in range(0,7):
+        for i in range(2,27):
+            if j==0:
+               segundaHoja['B'+str(i+1)]=tarifacostoPPAlista[i-2]
+               segundaHoja['B'+str(i+1)].alignment=Alignment(horizontal='center',vertical='center')
+            elif j==1:
+                segundaHoja['C'+str(i+1)]=totalIngresos[i-2]
+                segundaHoja['C'+str(i+1)].alignment=Alignment(horizontal='center',vertical='center')
+                segundaHoja['C'+str(i+1)].number_format='#,##0.00'
+            elif j==2:
+                segundaHoja['D'+str(i+1)]=totalEgresos[i-2]
+                segundaHoja['D'+str(i+1)].alignment=Alignment(horizontal='center',vertical='center')
+                segundaHoja['D'+str(i+1)].number_format='#,##0.00'
+            elif j==3:
+                segundaHoja['E'+str(i+1)]=ingresosDespuesImpuestos[i-2]
+                segundaHoja['E'+str(i+1)].alignment=Alignment(horizontal='center',vertical='center')
+                segundaHoja['E'+str(i+1)].number_format='#,##0.00'
+            elif j==4:
+                AuxFilaF+=ingresosDespuesImpuestos[i-2]
+                if AuxFilaF>0:
+                    segundaHoja['F'+str(i+1)]=AuxFilaF
+                    segundaHoja['F'+str(i+1)].alignment=Alignment(horizontal='center',vertical='center')
+                    segundaHoja['F'+str(i+1)].number_format='#,##0.00'
+                else:
+                    segundaHoja['F'+str(i+1)]=AuxFilaF
+                    segundaHoja['F'+str(i+1)].alignment=Alignment(horizontal='center',vertical='center')
+                    segundaHoja['F'+str(i+1)].number_format='#,##0.00'
+                    segundaHoja['F'+str(i+1)].font=Font(color='FF0000')
+            elif j==5:
+                AuxFilaG+=interesDeudaList[i-2]
+                segundaHoja['G'+str(i+1)]=AuxFilaG
+                segundaHoja['G'+str(i+1)].alignment=Alignment(horizontal='center',vertical='center')
+                segundaHoja['G'+str(i+1)].number_format='#,##0.00'
+            elif j==6:
+                segundaHoja['H'+str(i+1)]=DSCR[i-2]
+                segundaHoja['H'+str(i+1)].alignment=Alignment(horizontal='center',vertical='center')
+    
+                
+    book.save('Reporte Excel.xlsx')
+    
+    
 
 Valor_trackers=0
 valor_Terreno=0
@@ -66,6 +363,14 @@ arrTierra=[]
 seguroList=[]
 totalEgresos=[]
 Periodo=1
+depreciacionlnAcumulada=[]
+depreciacionVal=[]
+depreciacionAcAcumulada=[]
+valorLibro=[]
+montoDepreciar=[]
+depreciacionAux2=0
+depreciacionAux=0
+RentaLiquida=[]
 valorArriendoTotal=valorArriendoHa.get()*Area_Proyecto
 administracion=valorAdministracionOyM.get()
 
@@ -171,6 +476,7 @@ BOS_Total=BOS_Total*C_InstaladaDC/1000
 Total_Interconexion=Total_Interconexion*C_InstaladaDC/1000
 Capex=Equip_Gen_Total+BOS_Total+Total_Interconexion+costoLegalizacion
 
+
 """Intereses durante la construcción"""
 
 InteresConstruccion=Capex*(valorPeriodoFinanciacion.get()/12)*((valorTasaInteres.get()/100)/2)
@@ -187,9 +493,9 @@ capitalDeudaList=[]
 exponente=math.pow((1+interesDeuda/100),-plazoDeuda)
 Ani=(1-exponente)/(interesDeuda/100)
 R=deudaAcapital/Ani
-costoFinanAux=Capex
+costoFinanAux=deudaAcapital
 valorSeguro=Capex*valorSeguroOyM.get()/100
-
+AuxiliarLCOE=0
 
 for j in range(0,25):
     if j<plazoDeuda:
@@ -219,7 +525,7 @@ for i in range(0,29):
         costoPPAAGlista.append(costoPPAAG*TasaCTFE)
         ElectrPagadaUsuario.append(valorTarifaEnergiaRed.get()*TasaCTFE*demandaUsuarioSinAG)
         ElectrPagadaUsuarioAG.append(valorTarifaEnergiaRed.get()*TasaCTFE*autoconsumoUsuario)
-              
+        AuxiliarLCOE+=listaEnergia[i]   
     else:
         listaEnergia.append(0)
 
@@ -284,7 +590,11 @@ ReservaCostoFinan=valorTarifaPrestamista.get()*valorPorcenCostosDuros.get()*(Equ
 """Costo total instalado"""
 CostoTotalInstalado=-1*ReservaCostoFinan+Capex
 CTotalMW=CostoTotalInstalado/C_InstaladaDC/1000
-
+Inversion=CostoTotalInstalado-deudaAcapital
+TIRAux=[]
+TIRAux.append(-Inversion)
+depreciacionAceleradaAux=CostoTotalInstalado
+TIRAux_dos=[]
 
 """De la ventana costos de capital"""
 
@@ -295,7 +605,6 @@ costoReemplazoDos=valorCostoReemplazoEquipo_dos.get()
 
 Acelerada=costoReemplazo*C_InstaladaDC*1000
 resReemplazoEquipos=[]
-vidaUtil=0
 balanceFinal=[]
 reservaDeuda=[]
 reservaDeuda.append(inicialOM+cuotaInicialReserva)
@@ -309,6 +618,17 @@ ingresosSinInteres=[]
 ingresosAntesImpuestos=[]
 reservaCapitalTrabajo=[]
 reservaServicioDeuda=[]
+deduccionBaseGravable=[]
+acumuladoRenta=[]
+acumuladoRentaAux=0
+impuestoBaseGravable=[]
+impuestoRentaAcumulado=[]
+impuestoRentaAux=0
+ingresosDespuesImpuestos=[]
+TIRAux_dos.append(-Inversion)
+ajustePorReemplazo=[]
+VAN_dos=[]
+VAN_dos.append(-CostoTotalInstalado)
 
 for i in range(0,25):
     if i<reemplazoEquipo-1:
@@ -318,6 +638,7 @@ for i in range(0,25):
         interesDeuda.append(((balanceFinal[i]+reservaDeuda[i])/2)*(interesReserva/100))
         reservaCapitalTrabajo.append(0)
         reservaServicioDeuda.append(0)
+        ajustePorReemplazo.append(0)
         #print(i)
     elif i==reemplazoEquipo-1:
             resReemplazoEquipos.append(-Acelerada)
@@ -326,11 +647,14 @@ for i in range(0,25):
             interesDeuda.append(((balanceFinal[i]+reservaDeuda[i])/2)*(interesReserva/100))
             reservaCapitalTrabajo.append(0)
             reservaServicioDeuda.append(0)
+            ajustePorReemplazo.append(Acelerada)
             #print(i)
     elif i>reemplazoEquipo-1 and i<reemplazoEquipoDos-1:
         resReemplazoEquipos.append((vidaUtil)/(reemplazoEquipoDos-reemplazoEquipo-1))
+        ajustePorReemplazo.append(0)
         if i==vidaUtil-1:
             reservaCapitalTrabajo.append(inicialOM)
+            #print('no estoy entrando acá')
         else:
             reservaCapitalTrabajo.append(0)
         if i==plazoDeuda:
@@ -349,23 +673,102 @@ for i in range(0,25):
             reservaDeuda.append(0)
         resReemplazoEquipos.append(0)
         interesDeuda.append(0)
-        reservaCapitalTrabajo.append(0)
+        #reservaCapitalTrabajo.append(0)
         reservaServicioDeuda.append(0)
+        ajustePorReemplazo.append(0)
+        if i==vidaUtil-1:
+            reservaCapitalTrabajo.append(inicialOM)
+        else:
+            reservaCapitalTrabajo.append(0)
     totalIngresos.append(ingresoVentaAutAG[i]+ingresoExcAG[i]+ingresoCeret[i]+interesDeuda[i])
     EBITDA.append(totalIngresos[i]-totalEgresos[i])
     EBITDAux=EBITDAux+EBITDA[i]
     EBITDAAcumulado.append(EBITDAux)
     ingresosSinInteres.append(EBITDA[i]-interesDeudaList[i])
-    ingresosAntesImpuestos.append(ingresosSinInteres[i]-capitalDeudaList[i]-resReemplazoEquipos[i]+reservaCapitalTrabajo[i]-reservaServicioDeuda[i])
+    ingresosAntesImpuestos.append(ingresosSinInteres[i]-capitalDeudaList[i]-resReemplazoEquipos[i]+reservaCapitalTrabajo[i]+reservaServicioDeuda[i]-ajustePorReemplazo[i])
+    #print(len(reservaCapitalTrabajo[i]))
+    TIRAux.append(ingresosAntesImpuestos[i])
     if i<plazoDeuda:
         DSCR.append((EBITDA[i]-resReemplazoEquipos[i])/R)
     else:
         DSCR.append("N/A")
+    if depreciacion.get()==0:
+        """Depreciacion Lineal"""
+        depreciacionAux=CostoTotalInstalado*valorTasaDepreciacionLn.get()/100
+        ValorDeRescate=0.1*CostoTotalInstalado
+        if i<=valorTiempoDepreciacionLn.get()-1:
+            depreciacionVal.append(depreciacionAux)
+            depreciacionAux2+=depreciacionAux
+            depreciacionlnAcumulada.append(depreciacionAux2)
+            valorLibro.append(CostoTotalInstalado+ValorDeRescate-depreciacionlnAcumulada[i])
+        else:
+            depreciacionVal.append(0)
+            depreciacionlnAcumulada.append(0)
+    elif depreciacion.get()==1:
+        """Depreciacion acelerada"""
+        if i<=9:
+            montoDepreciar.append(depreciacionAceleradaAux)
+            depreciacionVal.append(depreciacionAceleradaAux*valorTasaDepreciacionAc.get()/100)
+            depreciacionAcAcumulada.append(depreciacionAc[i])
+            valorLibro.append(montoDepreciar[i]-depreciacionVal[i])
+            depreciacionAceleradaAux=valorLibro[i]
+            
+        else:
+            montoDepreciar.append(0)
+            depreciacionVal.append(0)
+            depreciacionAcAcumulada.append(0)
+            valorLibro.append(0)
+    if impuestos.get()==0:
+        """El cliente declara renta"""
+        if i==0:
+            deduccionBaseGravable.append(0)
+            acumuladoRenta.append(0)
+            RentaLiquida.append(ingresosSinInteres[i]-depreciacionVal[i])
+        else:
+            if (acumuladoRenta[i-1]+RentaLiquida[i-1]*valorBaseGravable.get()/100)<(CostoTotalInstalado*valorMaxDesCapex.get()/100):
+                deduccionBaseGravable.append(RentaLiquida[i-1]*valorBaseGravable.get()/100)
+                #print("Estoy en el primer if")
+            else:
+                if CostoTotalInstalado*valorMaxDesCapex.get()/100-acumuladoRenta[i-1]<=0:
+                    deduccionBaseGravable.append(0)
+                else:
+                    deduccionBaseGravable.append(CostoTotalInstalado*valorMaxDesCapex.get()/100-acumuladoRenta[i-1])
+                    #print("Estoy en el tercer else")
+            acumuladoRentaAux=acumuladoRenta[i-1]
+            acumuladoRenta.append(deduccionBaseGravable[i]+acumuladoRentaAux)
+            RentaLiquida.append(ingresosSinInteres[i]-depreciacionVal[i]-deduccionBaseGravable[i])
+        impuestoBaseGravable.append((RentaLiquida[i]-deduccionBaseGravable[i])*valorImpuestoRenta.get()/100)
+        impuestoRentaAux+=impuestoBaseGravable[i]
+        impuestoRentaAcumulado.append(impuestoRentaAux)
+    elif impuestos.get()==1:
+        """El cliente no declara renta"""
+        RentaLiquida.append(0)
+    ingresosDespuesImpuestos.append(ingresosAntesImpuestos[i]-impuestoBaseGravable[i])
+    TIRAux_dos.append(ingresosDespuesImpuestos[i])
+    VAN_dos.append(-totalEgresos[i])
+        
 
+LCOE=0
+TIR=npf.irr(TIRAux)
+TIR_dos=npf.irr(TIRAux_dos)
+VAN=npf.npv(valorEquityTIR.get()/100,TIRAux_dos)
+VAN_dosAux=npf.npv(valorEquityTIR.get()/100,VAN_dos)
+valorUnitario=totalEgresos[0]/listaEnergia[0]
 
-print(DSCR)
-print(ingresoExcAG)
-print(ingresoCeret)
+#print(deduccionBaseGravable)
+#print(RentaLiquida)
+#print(acumuladoRenta)
+#print(CostoTotalInstalado)
+#print(impuestoBaseGravable)
+print(ingresosDespuesImpuestos)
+print(ingresosAntesImpuestos)
+print(ingresosSinInteres)
+print(TIR_dos)
+print(VAN)
+print(calcular_van(TIRAux_dos, valorEquityTIR.get()/100))
+print(totalEgresos)
+print(CostoTotalInstalado)
+print(VAN_dosAux)
 
-
-
+if contador>=1:
+    reporteExcel()

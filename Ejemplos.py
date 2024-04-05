@@ -8,8 +8,20 @@ import tkinter as tk
 from PIL import Image, ImageTk  #Librería para usar imagenes en la ventanas
 from tkinter import messagebox #Librería para mensajes de advertencia
 
+
+
 """Funciones"""
 
+
+
+
+
+def contadorExcel():
+    global contador
+    contador+=1
+    ReporteLabel.config(text=f"Número de veces que se ha generado el reporte: {contador}")
+    
+contador=0
 """Función para mostrar ventana"""
 def mostrarVentana(ventana):
     ventana.deiconify()
@@ -218,7 +230,7 @@ botonIrVentanaFinan=tk.Button(ventanaDI,text='Sí', font=('Consolas',10), justif
 botonIrVentanaFinan.place(x=720,y=269)
 
 #Label de ir a ventana de impuestos
-subtituloImpuestos=tk.Label(ventanaDI, text='Desea modificar variables asociadas a los impuestos (declaración de renta)', font=('Consolas',11), justify='center', bg='light blue')
+subtituloImpuestos=tk.Label(ventanaDI, text='Desea modificar variables asociadas a los impuestos y la depreciación', font=('Consolas',11), justify='center', bg='light blue')
 subtituloImpuestos.place(x=5,y=297)
 #Botón de ir a ventana de impuestos
 botonIrVentanaFinan=tk.Button(ventanaDI,text='Sí', font=('Consolas',10), justify='center', command=mostrarVentanaImpuestos, width=8)
@@ -230,6 +242,17 @@ subtituloEnergeticos.place(x=5,y=325)
 #Botón de ir a ventana de costos de energía
 botonIrVentanaEnerg=tk.Button(ventanaDI,text='Sí', font=('Consolas',10), justify='center', command=mostrarVentanaEnergetica, width=8)
 botonIrVentanaEnerg.place(x=720,y=325)
+
+
+#Label de generar reporte en excel
+subtituloReporte=tk.Label(ventanaDI, text='¿Desea generar reporte en excel?', font=('Consolas',13), justify='center', bg='pale green')
+subtituloReporte.place(x=350,y=400)
+#Botón de generar reporte en excel
+botonReporte=tk.Button(ventanaDI,text='Sí', font=('Consolas',13), justify='center', command=contadorExcel, width=8)
+botonReporte.place(x=450,y=450)
+ReporteLabel=tk.Label(ventanaDI,text='Número de veces que se ha generado el reporte: 0', font=('Consolas',10),justify='left')
+ReporteLabel.place(x=320,y=500,height=18)
+
 
 """Características ventana energética"""
 ventanaEnergetica=tk.Toplevel()
@@ -370,9 +393,9 @@ titulo.place(x=420,y=211)
 impuestos=tk.Label(ventanaImpuestos,text='¿Es el propietario una entidad sujeta a impuestos?', font=('Consolas',10),justify='left')
 impuestos.place(x=5,y=250,height=18)
 impuestos=tk.IntVar() #Guarda la respuesta
-opcion_1=tk.Radiobutton(ventanaImpuestos,text='Sí',font=('Consolas',10),value=1,variable=impuestos)
+opcion_1=tk.Radiobutton(ventanaImpuestos,text='Sí',font=('Consolas',10),value=0,variable=impuestos)
 opcion_1.place(x=460,y=250,height=18)
-opcion_2=tk.Radiobutton(ventanaImpuestos,text='No',font=('Consolas',10),value=0,variable=impuestos)
+opcion_2=tk.Radiobutton(ventanaImpuestos,text='No',font=('Consolas',10),value=1,variable=impuestos)
 opcion_2.place(x=510,y=250,height=18)
 
 #Tasa de impuesto sobre la renta
@@ -389,12 +412,62 @@ valorImpuestoLocal=tk.DoubleVar(value=0)
 entradaValorImpuestoLocal=tk.Entry(ventanaImpuestos,textvariable=valorImpuestoLocal, bg='orange2')
 entradaValorImpuestoLocal.place(x=460,y=302, height=18)
 
+#Impuesto de renta
+impuestoRenta=tk.Label(ventanaImpuestos,text='Impuesto de renta (%)', font=('Consolas',10),justify='left')
+impuestoRenta.place(x=5,y=326,height=18)
+valorImpuestoRenta=tk.DoubleVar(value=32)
+entradaValorImpuestoRenta=tk.Entry(ventanaImpuestos,textvariable=valorImpuestoRenta, bg='orange2')
+entradaValorImpuestoRenta.place(x=460,y=326, height=18)
+
+#Descuento sobre la base gravable del valor invertido (ley 1715)
+baseGravable=tk.Label(ventanaImpuestos,text='Descuento sobre la base gravable del valor invertido(%)', font=('Consolas',10),justify='left')
+baseGravable.place(x=5,y=350,height=18)
+valorBaseGravable=tk.DoubleVar(value=50)
+entradaValorBaseGravable=tk.Entry(ventanaImpuestos,textvariable=valorBaseGravable, bg='orange2')
+entradaValorBaseGravable.place(x=460,y=350, height=18)
+
+#Maximo % sobre Capex a descontar de la renta liquida
+maxDesCapex=tk.Label(ventanaImpuestos,text='Máximo % sobre capex a descontar de la renta liquida(%)', font=('Consolas',10),justify='left')
+maxDesCapex.place(x=5,y=374,height=18)
+valorMaxDesCapex=tk.DoubleVar(value=50)
+entradaValorMaxDesCapex=tk.Entry(ventanaImpuestos,textvariable=valorMaxDesCapex, bg='orange2')
+entradaValorMaxDesCapex.place(x=460,y=374, height=18)
+
+#Tipo de depreciación
+depreciacion_label=tk.Label(ventanaImpuestos,text='Tipo de depreciación deseada', font=('Consolas',10),justify='left')
+depreciacion_label.place(x=5,y=398,height=18)
+depreciacion=tk.IntVar() #Guarda la respuesta
+opcion_1=tk.Radiobutton(ventanaImpuestos,text='Lineal',font=('Consolas',10),value=0,variable=depreciacion)
+opcion_1.place(x=460,y=398,height=18, width=70)
+opcion_2=tk.Radiobutton(ventanaImpuestos,text='Acelerada',font=('Consolas',10),value=1,variable=depreciacion)
+opcion_2.place(x=540,y=398,height=18, width=95) 
+
+#Tasa de depreciación acelerada
+tasaDepreciacionAc=tk.Label(ventanaImpuestos,text='Tasa de depreciación acelerada (%)', font=('Consolas',10),justify='left')
+tasaDepreciacionAc.place(x=5,y=422,height=18)
+valorTasaDepreciacionAc=tk.DoubleVar(value=40)
+entradaValorTasaDepreciacionAc=tk.Entry(ventanaImpuestos,textvariable=valorTasaDepreciacionAc, bg='orange2')
+entradaValorTasaDepreciacionAc.place(x=460,y=422, height=18)
+
+#Años para depreciación lineal
+tiempoDepreciacionLn=tk.Label(ventanaImpuestos,text='Años para depreciación lineal (años)', font=('Consolas',10),justify='left')
+tiempoDepreciacionLn.place(x=5,y=446,height=18)
+valorTiempoDepreciacionLn=tk.DoubleVar(value=20)
+entradaValorTiempoDepreciacionLn=tk.Entry(ventanaImpuestos,textvariable=valorTiempoDepreciacionLn, bg='orange2')
+entradaValorTiempoDepreciacionLn.place(x=460,y=446, height=18)
+
+#Tasa de depreciacion lineal
+tasaDepreciacionLn=tk.Label(ventanaImpuestos,text='Tasa de depreciación lineal (%)', font=('Consolas',10),justify='left')
+tasaDepreciacionLn.place(x=5,y=470,height=18)
+valorTasaDepreciacionLn=tk.DoubleVar(value=5)
+entradaValorTasaDepreciacionLn=tk.Entry(ventanaImpuestos,textvariable=valorTasaDepreciacionLn, bg='orange2')
+entradaValorTasaDepreciacionLn.place(x=460,y=470, height=18)
+
+
 
 """Boton para regresar a la ventana DI"""
 botonIrVentanaDI=tk.Button(ventanaImpuestos,text='Regresar', font=('Consolas',10), justify='center', command=mostrarVentanaDI_Impuestos, width=8)
 botonIrVentanaDI.place(x=5,y=650)
-
-
 
 """Características ventana de financiación de la deuda"""
 ventanaFinan=tk.Toplevel()
