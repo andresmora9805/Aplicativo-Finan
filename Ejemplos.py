@@ -15,7 +15,6 @@ from tkinter import messagebox #Librería para mensajes de advertencia
 
 
 
-
 def contadorExcel():
     global contador
     contador+=1

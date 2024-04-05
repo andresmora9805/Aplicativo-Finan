@@ -15,25 +15,16 @@ from openpyxl import load_workbook
 from openpyxl.styles import Alignment
 from openpyxl.styles import Font
 from openpyxl.styles import NamedStyle
+import matplotlib.pyplot as plt
+from openpyxl.drawing.image import Image
+import matplotlib.ticker as ticker
 
 
 """Una posible solución al problema es envíar los datos de entrada dentro de una función creada en este archivo"""
 
-
-
-def calcular_van(flujos_de_efectivo, tasa_descuento):
-    van = 0
-    lista=[]
-    for i in range(0,len(flujos_de_efectivo)):
-        if i==0:
-            #van=flujos_de_efectivo[0]
-            print('holi')
-        else:
-            van+=flujos_de_efectivo[i]/((1+tasa_descuento)**(i))
-            lista.append(flujos_de_efectivo[i]/((1+tasa_descuento)**(i)))
-            #print(lista[i-1])
-    return van
-
+def format_y_ticks(value, pos):
+    # Formatear el valor con separadores de miles
+    return '{:,.0f}'.format(value)
 
 def reporteExcel():
     book=Workbook()
@@ -215,15 +206,36 @@ def reporteExcel():
         sheet['C21']='Sí'
     else:
         sheet['C21']='No'
+        
+    sheet['A22']="Período de recuperación de la inversión"
+    sheet['A22'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet['A22'].font=Font(italic=True, bold=True)
+    sheet['B22']="Años"
+    sheet['B22'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet['B22'].font=Font(italic=True, bold=True)
+    
+    sheet['A23']="Relación beneficio costo"
+    sheet['A23'].alignment=Alignment(horizontal='center', vertical='center')
+    sheet['A23'].font=Font(italic=True, bold=True)
+    sheet['C23']=BC
+    sheet['C23'].alignment=Alignment(horizontal='center', vertical='center')
+           
     
     segundaHoja=book.create_sheet(title="Flujo de caja anual")
     segundaHoja.column_dimensions['A'].width=17
     segundaHoja['A1']="Año del proyecto"
     segundaHoja['A1'].font=Font(italic=True,bold=True)
     segundaHoja['A1'].alignment=Alignment(horizontal='center', vertical='center')
+    tiempo=[]
+    GraficaLista_dos=[]
+    GraficaLista_dos.append(0)
+    
     for i in range(2,28):
         segundaHoja['A'+str(i)]=i-2
         segundaHoja['A'+str(i)].alignment=Alignment(horizontal='center',vertical='center')
+        tiempo.append(i-2)
+        if i<27:
+           GraficaLista_dos.append(totalIngresos[i-2]-impuestoBaseGravable[i-2])
     
     segundaHoja.column_dimensions['B'].width=33
     segundaHoja['B1']="Tarifa Energía Vendida PPA COP/kWh"
@@ -260,6 +272,9 @@ def reporteExcel():
     segundaHoja['G1'].alignment=Alignment(horizontal='center', vertical='center')
     segundaHoja['G2'].alignment=Alignment(horizontal='center', vertical='center')
     AuxFilaG=0
+    GraficaLista=[]
+    GraficaLista.append(-Inversion)
+    
     
     segundaHoja.column_dimensions['H'].width=25
     segundaHoja['H1']="Cobertura de servicio de la deuda"
@@ -289,11 +304,15 @@ def reporteExcel():
                     segundaHoja['F'+str(i+1)]=AuxFilaF
                     segundaHoja['F'+str(i+1)].alignment=Alignment(horizontal='center',vertical='center')
                     segundaHoja['F'+str(i+1)].number_format='#,##0.00'
+                    GraficaLista.append(AuxFilaF)
                 else:
+                    sheet['C22']=i
+                    sheet['C22'].alignment=Alignment(horizontal='center', vertical='center')
                     segundaHoja['F'+str(i+1)]=AuxFilaF
                     segundaHoja['F'+str(i+1)].alignment=Alignment(horizontal='center',vertical='center')
                     segundaHoja['F'+str(i+1)].number_format='#,##0.00'
                     segundaHoja['F'+str(i+1)].font=Font(color='FF0000')
+                    GraficaLista.append(AuxFilaF)
             elif j==5:
                 AuxFilaG+=interesDeudaList[i-2]
                 segundaHoja['G'+str(i+1)]=AuxFilaG
@@ -302,8 +321,31 @@ def reporteExcel():
             elif j==6:
                 segundaHoja['H'+str(i+1)]=DSCR[i-2]
                 segundaHoja['H'+str(i+1)].alignment=Alignment(horizontal='center',vertical='center')
+            
     
-                
+    tercerHoja=book.create_sheet(title="Graficos")
+    
+    fig, axs=plt.subplots(2, figsize=(12,6))
+    axs[0].plot(tiempo,GraficaLista)
+    #axs[0].set_xlabel("Años del proyecto")
+    axs[0].set_ylabel("Flujo de caja acumulado")
+    axs[0].set_title("Flujo de caja acumulado")
+    axs[0].yaxis.set_major_formatter(ticker.FuncFormatter(format_y_ticks))
+    axs[0].axhline(0, color='black', linestyle='--')
+    axs[1].plot(tiempo,GraficaLista_dos)
+    axs[1].set_xlabel("Años del proyecto")
+    axs[1].set_ylabel("$")
+    axs[1].set_title("Ingreso más beneficio en impuesto")
+    axs[1].yaxis.set_major_formatter(ticker.FuncFormatter(format_y_ticks))
+    axs[1].axhline(0, color='black', linestyle='--')
+    fig.savefig('Grafico_1.png')
+    #fig.savefig('Grafico_2.png')
+    img_uno=Image('Grafico_1.png')
+    #img_dos=Image('Grafico_2.png')
+        
+    tercerHoja.add_image(img_uno,'B1')
+    #tercerHoja.add_image(img_dos,'F1')
+    #print(GraficaLista_dos)
     book.save('Reporte Excel.xlsx')
     
     
@@ -324,9 +366,6 @@ tarifaEnergiaLista=[]
 tarifacostoPPAlista=[]
 CERElista=[]
 costoPPAAGlista=[]
-C_InstaladaMW=valorCapacidad.get()
-C_InstaladakW=C_InstaladaMW*1000
-C_InstaladaDC=C_InstaladakW*1.2
 vidaUtil=25
 Area_Proyecto=C_InstaladaMW*2
 Irradiancia=valorIrradiancia.get()
@@ -747,28 +786,17 @@ for i in range(0,25):
     TIRAux_dos.append(ingresosDespuesImpuestos[i])
     VAN_dos.append(-totalEgresos[i])
         
-
-LCOE=0
+VANIngresos=npf.npv(valorEquityTIR.get()/100,ingresosAntesImpuestos)
+AuxEgresosTotales=[]
+VANEgresos=npf.npv(valorEquityTIR.get()/100,totalEgresos)
+BC=VANIngresos/(VANEgresos+Inversion)
 TIR=npf.irr(TIRAux)
 TIR_dos=npf.irr(TIRAux_dos)
 VAN=npf.npv(valorEquityTIR.get()/100,TIRAux_dos)
 VAN_dosAux=npf.npv(valorEquityTIR.get()/100,VAN_dos)
 valorUnitario=totalEgresos[0]/listaEnergia[0]
+LCOE=-VAN_dosAux/sum(listaEnergia)
 
-#print(deduccionBaseGravable)
-#print(RentaLiquida)
-#print(acumuladoRenta)
-#print(CostoTotalInstalado)
-#print(impuestoBaseGravable)
-print(ingresosDespuesImpuestos)
-print(ingresosAntesImpuestos)
-print(ingresosSinInteres)
-print(TIR_dos)
-print(VAN)
-print(calcular_van(TIRAux_dos, valorEquityTIR.get()/100))
-print(totalEgresos)
-print(CostoTotalInstalado)
-print(VAN_dosAux)
 
 if contador>=1:
     reporteExcel()
